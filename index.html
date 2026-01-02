@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Just Breathe - Meditation App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #3a2f1f 0%, #2a2520 100%);
+            min-height: 100vh;
+        }
+        .timer-circle {
+            transition: stroke-dashoffset 0.1s linear;
+        }
+        .timeline-item {
+            border-left: 2px solid #8b7355;
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0.5rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #d8a5d8;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #8b7355;
+            color: #d4c4b0;
+            font-size: 0.875rem;
+            background-color: rgba(58, 47, 31, 0.5);
+        }
+        .calendar-day.other-month {
+            color: #6b5d4a;
+            background-color: rgba(42, 37, 32, 0.3);
+        }
+        .calendar-day.has-meditation {
+            background-color: rgba(216, 165, 216, 0.25);
+            color: #d8a5d8;
+            font-weight: 600;
+            position: relative;
+        }
+        .calendar-day.has-meditation::after {
+            content: '●';
+            position: absolute;
+            bottom: 4px;
+            font-size: 0.5rem;
+            color: #d8a5d8;
+        }
+        .calendar-day.today {
+            border-color: #d8a5d8;
+            border-width: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl">
+        <!-- Main Timer Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-light text-amber-50 mb-8">Just Breathe</h1>
+            
+            <!-- Timer Display -->
+            <div class="relative inline-block mb-8">
+                <svg class="transform -rotate-90" width="300" height="300">
+                    <!-- Background circle -->
+                    <circle
+                        cx="150"
+                        cy="150"
+                        r="140"
+                        fill="none"
+                        stroke="#5a4a3a"
+                        stroke-width="2"
+                    />
+                    <!-- Progress circle -->
+                    <circle
+                        class="timer-circle"
+                        cx="150"
+                        cy="150"
+                        r="140"
+                        fill="none"
+                        stroke="#d8a5d8"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-dasharray="879.65"
+                        stroke-dashoffset="879.65"
+                    />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center">
+                        <div id="timeDisplay" class="text-5xl font-light text-amber-50 mb-2">00:00</div>
+                        <div id="statusText" class="text-sm text-amber-200"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duration Buttons -->
+            <div class="flex flex-wrap justify-center gap-3 mb-8" id="durationButtons">
+                <button 
+                    onclick="startTimer(60)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn1m"
+                >
+                    1m
+                </button>
+                <button 
+                    onclick="startTimer(180)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn3m"
+                >
+                    3m
+                </button>
+                <button 
+                    onclick="startTimer(300)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn5m"
+                >
+                    5m
+                </button>
+                <button 
+                    onclick="startTimer(600)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn10m"
+                >
+                    10m
+                </button>
+                <button 
+                    onclick="startTimer(900)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn15m"
+                >
+                    15m
+                </button>
+                <button 
+                    onclick="startTimer(1200)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn20m"
+                >
+                    20m
+                </button>
+                <button 
+                    onclick="startTimer(1500)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn25m"
+                >
+                    25m
+                </button>
+                <button 
+                    onclick="startTimer(1800)" 
+                    class="px-4 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                    id="btn30m"
+                >
+                    30m
+                </button>
+            </div>
+
+            <!-- Control Buttons -->
+            <div id="controlButtons" class="hidden">
+                <button 
+                    onclick="pauseResumeTimer()" 
+                    class="px-6 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded mr-2 bg-amber-900/20"
+                    id="pauseBtn"
+                >
+                    Pause
+                </button>
+                <button 
+                    onclick="stopTimer()" 
+                    class="px-6 py-2 border border-amber-800 text-amber-100 hover:border-amber-600 hover:text-amber-50 transition-colors rounded bg-amber-900/20"
+                >
+                    Stop
+                </button>
+            </div>
+        </div>
+
+        <!-- Post-Meditation Reflection -->
+        <div id="reflectionSection" class="hidden mb-8">
+            <div class="bg-amber-950/40 rounded-lg p-6 border border-amber-900/30">
+                <h2 class="text-xl font-light text-amber-50 mb-4">What is on your mind?</h2>
+                <textarea 
+                    id="reflectionText" 
+                    class="w-full bg-amber-950/60 text-amber-100 border border-amber-800/50 rounded p-3 mb-4 focus:outline-none focus:border-amber-700 resize-none placeholder-amber-600"
+                    rows="4"
+                    placeholder="Share your thoughts..."
+                ></textarea>
+                <button 
+                    onclick="saveReflection()" 
+                    class="px-6 py-2 bg-amber-800/50 text-amber-100 hover:bg-amber-700/50 transition-colors rounded border border-amber-700/50"
+                >
+                    Save
+                </button>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="mt-12 mb-8">
+            <h2 class="text-2xl font-light text-amber-50 mb-6">Calendar</h2>
+            <div id="calendarContainer" class="bg-amber-950/40 rounded-lg p-6 border border-amber-900/30">
+                <!-- Calendar will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-light text-amber-50 mb-6">Timeline</h2>
+            <div id="timelineContainer" class="space-y-4">
+                <!-- Timeline items will be inserted here -->
+            </div>
+            <div id="emptyTimeline" class="text-amber-300/70 text-center py-8">
+                No sessions yet. Start your first meditation!
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio element for completion sound -->
+    <audio id="completionSound" preload="auto">
+        <!-- Royalty-free meditation bell sound -->
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        let timerInterval = null;
+        let remainingSeconds = 0;
+        let totalSeconds = 0;
+        let isPaused = false;
+        let currentSession = null;
+        const circumference = 2 * Math.PI * 140; // radius is 140
+
+        // Load calendar from localStorage
+        function loadCalendar() {
+            const sessions = JSON.parse(localStorage.getItem('meditationSessions') || '[]');
+            const container = document.getElementById('calendarContainer');
+            
+            // Get meditation dates (just the date part, no time)
+            const meditationDates = new Set();
+            sessions.forEach(session => {
+                const date = new Date(session.date);
+                const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                meditationDates.add(dateKey);
+            });
+            
+            // Get current month
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // Get previous month's last days for padding
+            const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            
+            // Build calendar HTML
+            const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            let calendarHTML = `
+                <div class="mb-4">
+                    <h3 class="text-xl font-light text-amber-50 text-center">${monthNames[currentMonth]} ${currentYear}</h3>
+                </div>
+                <div class="grid grid-cols-7 gap-1">
+            `;
+            
+            // Week day headers
+            weekDays.forEach(day => {
+                calendarHTML += `<div class="text-center text-amber-300/80 text-sm font-medium py-2">${day}</div>`;
+            });
+            
+            // Previous month's trailing days
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const day = prevMonthLastDay - i;
+                calendarHTML += `<div class="calendar-day other-month">${day}</div>`;
+            }
+            
+            // Current month's days
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasMeditation = meditationDates.has(dateKey);
+                const isToday = today.getDate() === day && 
+                               today.getMonth() === currentMonth && 
+                               today.getFullYear() === currentYear;
+                
+                let dayClass = 'calendar-day';
+                if (hasMeditation) dayClass += ' has-meditation';
+                if (isToday) dayClass += ' today';
+                
+                calendarHTML += `<div class="${dayClass}">${day}</div>`;
+            }
+            
+            // Next month's leading days
+            const totalCells = 42; // 6 weeks * 7 days
+            const cellsUsed = startingDayOfWeek + daysInMonth;
+            const remainingCells = totalCells - cellsUsed;
+            
+            for (let day = 1; day <= remainingCells && day <= 14; day++) {
+                calendarHTML += `<div class="calendar-day other-month">${day}</div>`;
+            }
+            
+            calendarHTML += '</div>';
+            container.innerHTML = calendarHTML;
+        }
+
+        // Load timeline from localStorage
+        function loadTimeline() {
+            const sessions = JSON.parse(localStorage.getItem('meditationSessions') || '[]');
+            const container = document.getElementById('timelineContainer');
+            const emptyMessage = document.getElementById('emptyTimeline');
+            
+            if (sessions.length === 0) {
+                container.innerHTML = '';
+                emptyMessage.classList.remove('hidden');
+                return;
+            }
+            
+            emptyMessage.classList.add('hidden');
+            container.innerHTML = sessions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map(session => `
+                    <div class="timeline-item pb-4">
+                        <div class="text-amber-200/80 text-sm mb-1">${formatDate(session.date)}</div>
+                        <div class="text-amber-100 mb-1">Duration: ${formatDuration(session.duration)}</div>
+                        ${session.thought ? `<div class="text-amber-200/70 text-sm italic">"${session.thought}"</div>` : ''}
+                    </div>
+                `).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}m ${secs}s`;
+        }
+
+        function startTimer(seconds) {
+            // Stop any existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            totalSeconds = seconds;
+            remainingSeconds = seconds;
+            isPaused = false;
+            currentSession = {
+                date: new Date().toISOString(),
+                duration: seconds,
+                thought: null
+            };
+
+            // Hide duration buttons, show control buttons
+            document.getElementById('durationButtons').classList.add('hidden');
+            document.getElementById('controlButtons').classList.remove('hidden');
+            document.getElementById('reflectionSection').classList.add('hidden');
+            document.getElementById('statusText').textContent = 'Meditating...';
+
+            updateTimerDisplay();
+            startTimerInterval();
+        }
+
+        function startTimerInterval() {
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    remainingSeconds--;
+                    updateTimerDisplay();
+
+                    if (remainingSeconds <= 0) {
+                        completeTimer();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            document.getElementById('timeDisplay').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            // Update circle progress
+            const progress = (totalSeconds - remainingSeconds) / totalSeconds;
+            const offset = circumference - (progress * circumference);
+            const circle = document.querySelector('.timer-circle');
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function pauseResumeTimer() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = isPaused ? 'Resume' : 'Pause';
+            document.getElementById('statusText').textContent = isPaused ? 'Paused' : 'Meditating...';
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            remainingSeconds = 0;
+            totalSeconds = 0;
+            isPaused = false;
+            
+            // Reset UI
+            document.getElementById('durationButtons').classList.remove('hidden');
+            document.getElementById('controlButtons').classList.add('hidden');
+            document.getElementById('reflectionSection').classList.add('hidden');
+            document.getElementById('timeDisplay').textContent = '00:00';
+            document.getElementById('statusText').textContent = '';
+
+            // Reset circle
+            const circle = document.querySelector('.timer-circle');
+            circle.style.strokeDashoffset = circumference;
+            
+            currentSession = null;
+        }
+
+        function playCompletionSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create a bell-like "ding" sound using multiple oscillators
+                const frequencies = [523.25, 659.25, 783.99]; // C, E, G notes for a pleasant bell sound
+                const duration = 0.8;
+                const startTime = audioContext.currentTime;
+                
+                frequencies.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    // Create a bell-like envelope with quick attack and slow decay
+                    const delay = index * 0.05; // Slight delay for each note
+                    gainNode.gain.setValueAtTime(0, startTime + delay);
+                    gainNode.gain.linearRampToValueAtTime(0.3, startTime + delay + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + delay + duration);
+                    
+                    oscillator.start(startTime + delay);
+                    oscillator.stop(startTime + delay + duration);
+                });
+                
+                // Also try the audio element as a backup
+                const audio = document.getElementById('completionSound');
+                if (audio && audio.readyState >= 2) {
+                    audio.currentTime = 0;
+                    audio.play().catch(() => {
+                        // Audio element failed, but Web Audio should work
+                    });
+                }
+            } catch (err) {
+                // Fallback: Try the audio element
+                const audio = document.getElementById('completionSound');
+                if (audio) {
+                    audio.currentTime = 0;
+                    audio.play().catch(() => {
+                        console.log('Sound playback failed:', err);
+                    });
+                }
+            }
+        }
+
+        function completeTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // Play completion sound
+            playCompletionSound();
+
+            // Update UI
+            document.getElementById('durationButtons').classList.add('hidden');
+            document.getElementById('controlButtons').classList.add('hidden');
+            document.getElementById('reflectionSection').classList.remove('hidden');
+            document.getElementById('statusText').textContent = 'Session complete';
+            document.getElementById('timeDisplay').textContent = '00:00';
+
+            // Reset circle
+            const circle = document.querySelector('.timer-circle');
+            circle.style.strokeDashoffset = 0;
+        }
+
+        function saveReflection() {
+            const thought = document.getElementById('reflectionText').value.trim();
+            
+            if (currentSession) {
+                currentSession.thought = thought || null;
+                
+                // Save to localStorage
+                const sessions = JSON.parse(localStorage.getItem('meditationSessions') || '[]');
+                sessions.push(currentSession);
+                localStorage.setItem('meditationSessions', JSON.stringify(sessions));
+                
+                // Reload timeline and calendar
+                loadTimeline();
+                loadCalendar();
+                
+                // Reset UI
+                document.getElementById('reflectionText').value = '';
+                document.getElementById('reflectionSection').classList.add('hidden');
+                document.getElementById('durationButtons').classList.remove('hidden');
+                document.getElementById('statusText').textContent = '';
+
+                // Reset circle
+                const circle = document.querySelector('.timer-circle');
+                circle.style.strokeDashoffset = circumference;
+                
+                currentSession = null;
+            }
+        }
+
+        // Initialize on page load
+        loadTimeline();
+        loadCalendar();
+    </script>
+</body>
+</html>
+
