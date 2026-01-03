@@ -1,6 +1,8 @@
 # Just Breathe - Meditation App
 
 A beautiful, warm-toned meditation timer app with calendar tracking.
+https://strawberry07.github.io/meditation-app/
+
 
 ## Features
 
@@ -12,13 +14,5 @@ A beautiful, warm-toned meditation timer app with calendar tracking.
 - Gentle bell sound when timer completes
 - Warm, calming color theme
 - Fully responsive for mobile devices
-- Timer continues even when screen goes dark
-- Vibration notification on completion
 
-## Usage
 
-Simply open `index.html` in your web browser or deploy to GitHub Pages for mobile access.
-
-## Data Storage
-
-All meditation sessions are stored locally in your browser's localStorage, so your data stays private and on your device.
