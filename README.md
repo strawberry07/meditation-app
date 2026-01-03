@@ -1,6 +1,8 @@
 # Just Breathe - Meditation App
 
 A beautiful, warm-toned meditation timer app with calendar tracking.
+https://strawberry07.github.io/meditation-app/
+
 
 ## Features
 
