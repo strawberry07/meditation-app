@@ -56,3 +56,4 @@ Once deployed, you can:
 
 All meditation sessions are stored locally in your browser's localStorage, so your data stays private and on your device.
 
+
